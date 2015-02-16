@@ -1,14 +1,32 @@
 #!/usr/bin/python
 
+import os
 import subprocess
+import time
 
 import dbus
 import dbus.glib
 import gobject
 import psutil
 
+import timetotals
+
+ROOT_DIR = os.environ["HOME"] + "/.imaway"
 
 MUTE_CMD = "pactl set-sink-mute %s %s"
+
+
+def now_dir():
+    return "%s/%s" % (ROOT_DIR, time.strftime("%Y-%U"))
+
+
+def record_event(event):
+    if not os.path.isdir(now_dir()):
+        os.makedirs(now_dir(), 0755)
+
+    nowfile = "%s/records.txt" % now_dir()
+    with open(nowfile, "a") as f:
+        f.write("%s %s\n" % (time.strftime("%Y-%m-%dT%H:%M:%S%z"), event))
 
 
 def is_xchat_running():
@@ -32,6 +50,7 @@ def mute(mute=1):
 
 def lock():
     print "Screen saver turned on"
+    record_event("LOCKED")
     mute()
     if is_xchat_running():
         subprocess.call("xchat -e -c 'AWAY'", shell=True)
@@ -39,8 +58,10 @@ def lock():
 
 def unlock():
     mute(mute=0)
+    record_event("UNLOCKED")
     if is_xchat_running():
         subprocess.call("xchat -e -c 'BACK'", shell=True)
+    subprocess.call("notify-send '%s'" % timetotals.time_today(), shell=True)
     print "Screen saver deactivated"
 
 
