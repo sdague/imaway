@@ -61,7 +61,7 @@ def unlock():
     record_event("UNLOCKED")
     if is_xchat_running():
         subprocess.call("xchat -e -c 'BACK'", shell=True)
-    subprocess.call("notify-send '%s'" % timetotals.time_today(), shell=True)
+    timetotals.notify()
     print "Screen saver deactivated"
 
 

@@ -2,6 +2,7 @@
 
 import datetime
 import os
+import subprocess
 import time
 
 import dateutil.parser
@@ -11,6 +12,42 @@ ROOT_DIR = os.environ["HOME"] + "/.imaway"
 
 def now_file():
     return "%s/%s/records.txt" % (ROOT_DIR, time.strftime("%Y-%U"))
+
+
+def delta_hours(delta):
+    return (delta.days * 24 + delta.seconds / (60 * 60))
+
+
+def delta_mins(delta):
+    return ((delta.seconds / 60) % 60)
+
+
+def pretty_delta(delta):
+    return "%s:%s" % (delta_hours(delta), delta_mins(delta))
+
+
+def calc_icon(week, day):
+    """Calculate the icon for how the notification"""
+    week_hours = delta_hours(week)
+    day_hours = delta_hours(day)
+    if (week_hours > (9 * 5)) or (day_hours > 9):
+        return "dialog-warning"
+    if (week_hours > (8 * 5)) or (day_hours > 8):
+        return "dialog-information"
+    return None
+
+
+def notify():
+    week, day = time_today()
+    icon = calc_icon(week, day)
+    pretty_time = ("Week: %s\nToday: %s" %
+                   (pretty_delta(week), pretty_delta(day)))
+
+    cmd = ['notify-send', 'Worked Time', pretty_time]
+    if icon:
+        cmd.extend('-i', icon)
+    print cmd
+    subprocess.call(cmd)
 
 
 def time_today():
@@ -39,11 +76,11 @@ def time_today():
         if last_unlock.day == now.day:
             today += (now - last_unlock)
 
-    return "Week so far: %s, today %s" % (this_week, today)
+    return this_week, today
 
 
 def main():
-    print time_today()
+    notify()
 
 if __name__ == "__main__":
     main()
