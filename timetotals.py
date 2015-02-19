@@ -23,7 +23,7 @@ def delta_mins(delta):
 
 
 def pretty_delta(delta):
-    return "%s:%s" % (delta_hours(delta), delta_mins(delta))
+    return "%d:%2.2d" % (delta_hours(delta), delta_mins(delta))
 
 
 def calc_icon(week, day):
