@@ -1,5 +1,6 @@
 #!/usr/bin/python
 
+import ConfigParser
 import datetime
 import os
 import subprocess
@@ -8,6 +9,7 @@ import time
 import dateutil.parser
 
 ROOT_DIR = os.environ["HOME"] + "/.imaway"
+CONF = ROOT_DIR + "/imaway.conf"
 
 
 def now_file():
@@ -30,9 +32,13 @@ def calc_icon(week, day):
     """Calculate the icon for how the notification"""
     week_hours = delta_hours(week)
     day_hours = delta_hours(day)
-    if (week_hours > (9 * 5)) or (day_hours > 9):
+    config = ConfigParser.ConfigParser()
+    config.read(CONF)
+    warnlimit = config.getint('limits', 'warn')
+    infolimit = config.getint('limits', 'info')
+    if (week_hours > (warnlimit * 5)) or (day_hours > warnlimit):
         return "dialog-warning"
-    if (week_hours > (8 * 5)) or (day_hours > 8):
+    if (week_hours > (infolimit * 5)) or (day_hours > infolimit):
         return "dialog-information"
     return None
 
@@ -45,7 +51,7 @@ def notify():
 
     cmd = ['notify-send', 'Worked Time', pretty_time]
     if icon:
-        cmd.extend('-i', icon)
+        cmd.extend(('-i', icon))
     print cmd
     subprocess.call(cmd)
 
