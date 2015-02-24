@@ -36,15 +36,14 @@ def calc_icon(week, day):
     config.read(CONF)
     warnlimit = config.getint('limits', 'warn')
     infolimit = config.getint('limits', 'info')
-    if (week_hours > (warnlimit * 5)) or (day_hours > warnlimit):
+    if (week_hours >= (warnlimit * 5)) or (day_hours >= warnlimit):
         return "dialog-warning"
-    if (week_hours > (infolimit * 5)) or (day_hours > infolimit):
+    if (week_hours >= (infolimit * 5)) or (day_hours >= infolimit):
         return "dialog-information"
     return None
 
 
-def notify():
-    week, day = time_today()
+def _send_notify(week, day):
     icon = calc_icon(week, day)
     pretty_time = ("Week: %s\nToday: %s" %
                    (pretty_delta(week), pretty_delta(day)))
@@ -54,6 +53,21 @@ def notify():
         cmd.extend(('-i', icon))
     print cmd
     subprocess.call(cmd)
+
+
+def notify():
+    week, day = time_today()
+    _send_notify(week, day)
+
+
+def notify_timer(mod=60, res=1):
+    week, day = time_today()
+    wmod = (week.seconds / res) % mod
+    dmod = (day.seconds / res) % mod
+    print "week %d, day %d" % (wmod, dmod)
+    if wmod == 0 or dmod == 0:
+        _send_notify(week, day)
+    return True
 
 
 def time_today():

@@ -15,12 +15,17 @@ ROOT_DIR = os.environ["HOME"] + "/.imaway"
 
 MUTE_CMD = "pactl set-sink-mute %s %s"
 
+# the last event we had
+EVENT = None
+
 
 def now_dir():
     return "%s/%s" % (ROOT_DIR, time.strftime("%Y-%U"))
 
 
 def record_event(event):
+    global EVENT
+    EVENT = event
     if not os.path.isdir(now_dir()):
         os.makedirs(now_dir(), 0755)
 
@@ -79,6 +84,11 @@ def main(args):
         'Unlocked',
         dbus_interface='com.canonical.Unity.Session')
 
+    def timer():
+        timetotals.notify_timer(mod=60, res=60)
+        return
+
+    gobject.timeout_add(10000, timer)
     mainLoop = gobject.MainLoop()
     mainLoop.run()
 
