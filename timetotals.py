@@ -10,6 +10,7 @@ import dateutil.parser
 
 ROOT_DIR = os.environ["HOME"] + "/.imaway"
 CONF = ROOT_DIR + "/imaway.conf"
+LAST_SENT = ""
 
 
 def now_file():
@@ -61,12 +62,15 @@ def notify():
 
 
 def notify_timer(mod=60, res=1):
+    global LAST_SENT
     week, day = time_today()
     wmod = (week.seconds / res) % mod
     dmod = (day.seconds / res) % mod
-    print "week %d, day %d" % (wmod, dmod)
-    if wmod == 0 or dmod == 0:
+    msg = "week %d, day %d" % (wmod, dmod)
+    print msg
+    if wmod == 0 or dmod == 0 and LAST_SENT != msg:
         _send_notify(week, day)
+        LAST_SENT = msg
     return True
 
 

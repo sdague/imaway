@@ -86,7 +86,7 @@ def main(args):
 
     def timer():
         timetotals.notify_timer(mod=60, res=60)
-        return
+        return True
 
     gobject.timeout_add(10000, timer)
     mainLoop = gobject.MainLoop()
