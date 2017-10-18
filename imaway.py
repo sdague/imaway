@@ -46,6 +46,13 @@ def find_sinks():
     return [int(x.split('Sink #')[1]) for x in lines if x]
 
 
+def toggle_lock(toggle):
+    if toggle == 0:
+        unlock()
+    elif toggle ==1:
+        lock()
+
+
 def mute(mute=1):
     sinks = find_sinks()
     for sink in sinks:
@@ -74,15 +81,24 @@ def main(args):
     bus = dbus.SessionBus()
 
     # listen for changes in screensaver activity
+    # Unity
     bus.add_signal_receiver(
         lock,
         'Locked',
         dbus_interface='com.canonical.Unity.Session')
 
+    # Unity
     bus.add_signal_receiver(
         unlock,
         'Unlocked',
         dbus_interface='com.canonical.Unity.Session')
+
+    # gnome3
+    bus.add_signal_receiver(
+        toggle_lock,
+        'ActiveChanged',
+        'org.gnome.ScreenSaver',
+        path='/org/gnome/ScreenSaver')
 
     def timer():
         timetotals.notify_timer(mod=60, res=60)
